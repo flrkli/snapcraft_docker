@@ -6,6 +6,7 @@ COPY bin/* /usr/bin/
 COPY npmrc /root/.npmrc
 WORKDIR /build
 
+RUN ["cross-build-start"]
 # Grab dependencies
 RUN apt-get update
 RUN apt-get dist-upgrade --yes
@@ -24,12 +25,14 @@ RUN curl -L $(curl -H 'X-Ubuntu-Series: 16' -H 'X-Ubuntu-Architecture: armhf' 'h
 RUN mkdir -p /snap/snapcraft
 RUN unsquashfs -d /snap/snapcraft/current snapcraft.snap
 
-# Create a snapcraft runner 
+# Create a snapcraft runner
 RUN mkdir -p /snap/bin
 RUN echo "#!/bin/sh" > /snap/bin/snapcraft
 RUN snap_version="$(awk '/^version:/{print $2}' /snap/snapcraft/current/meta/snap.yaml)" && echo "export SNAP_VERSION=\"$snap_version\"" >> /snap/bin/snapcraft
 RUN echo 'exec "/usr/bin/python3" "$SNAP/bin/snapcraft" "$@"' >> /snap/bin/snapcraft
 RUN chmod +x /snap/bin/snapcraft
+
+RUN ["cross-build-end"]
 
 # Multi-stage build, only need the snaps from the builder. Copy them one at a
 # time so they can be cached.
@@ -45,6 +48,7 @@ COPY --from=builder /snap/core /snap/core
 COPY --from=builder /snap/snapcraft /snap/snapcraft
 COPY --from=builder /snap/bin/snapcraft /snap/bin/snapcraft
 
+RUN ["cross-build-start"]
 # Install python
 RUN apt-get update \
   && apt-get install -y python3-pip python3-dev \
@@ -64,3 +68,5 @@ ENV SNAP="/snap/snapcraft/current"
 ENV SNAP_NAME="snapcraft"
 ENV SNAP_ARCH="armhf"
 ENV PYTHONPATH="/snap/snapcraft/current/lib/python3.5/site-packages:/snap/snapcraft/current/usr/lib/python3.5:/snap/snapcraft/current/usr/lib/arm-linux-gnueabihf:/snap/snapcraft/current/legacy_snapcraft/lib/python3.5/site-packages:$PYTHONPATH"
+
+RUN ["cross-build-end"]
