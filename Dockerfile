@@ -28,7 +28,7 @@ RUN unsquashfs -d /snap/snapcraft/current snapcraft.snap
 # Create a snapcraft runner
 RUN mkdir -p /snap/bin
 RUN echo "#!/bin/sh" > /snap/bin/snapcraft
-RUN snap_version="$(awk '/^version:/{print $2}' /snap/snapcraft/current/meta/snap.yaml)" && echo "export SNAP_VERSION=\"$snap_version\"" >> /snap/bin/snapcraft
+RUN snap_version="$(awk '/^version:/{print $2}' /snap/snapcraft/current/meta/snap.yaml)" && echo "export SNAP_VERSION=3.9.1" >> /snap/bin/snapcraft
 RUN echo 'exec "/usr/bin/python3" "$SNAP/bin/snapcraft" "$@"' >> /snap/bin/snapcraft
 RUN chmod +x /snap/bin/snapcraft
 
