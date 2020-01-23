@@ -50,6 +50,12 @@ COPY --from=builder /snap/bin/snapcraft /snap/bin/snapcraft
 
 RUN ["cross-build-start"]
 
+RUN apt-get update \
+  && apt-get install -y python3-pip python3-dev \
+  && cd /usr/local/bin \
+  && ln -s /usr/bin/python3 python \
+  && pip3 install --upgrade pip
+
 # Generate locale
 RUN apt-get update && apt-get dist-upgrade --yes && apt-get install --yes sudo locales && locale-gen en_US.UTF-8
 
@@ -61,5 +67,6 @@ ENV PATH="/snap/bin:$PATH"
 ENV SNAP="/snap/snapcraft/current"
 ENV SNAP_NAME="snapcraft"
 ENV SNAP_ARCH="armhf"
+ENV PYTHONPATH="/snap/snapcraft/current/lib/python3.5/site-packages:/snap/snapcraft/current/usr/lib/python3.5:/snap/snapcraft/current/usr/lib/arm-linux-gnueabihf:$PYTHONPATH"
 
 RUN ["cross-build-end"]
