@@ -50,11 +50,15 @@ COPY --from=builder /snap/bin/snapcraft /snap/bin/snapcraft
 
 RUN ["cross-build-start"]
 
-RUN apt-get update \
-  && apt-get install -y python3-pip python3-dev \
-  && cd /usr/local/bin \
-  && ln -s /usr/bin/python3 python \
-  && pip3 install --upgrade pip
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:jonathonf/python-3.6
+RUN apt-get update
+RUN apt-get install -y build-essential python3.6 python3.6-dev python3-pip python3.6-venv
+
+# update pip
+RUN python3.6 -m pip install pip --upgrade
+RUN python3.6 -m pip install wheel
 
 # Generate locale
 RUN apt-get update && apt-get dist-upgrade --yes && apt-get install --yes sudo locales && locale-gen en_US.UTF-8
