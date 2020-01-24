@@ -1,4 +1,4 @@
-FROM multiarch/ubuntu-core:armhf-xenial as builder
+FROM arm32v7/ubuntu:bionic as builder
 
 # Prepare the cross build binaries
 COPY bin/* /usr/bin/
@@ -20,6 +20,12 @@ RUN curl -L $(curl -H 'X-Ubuntu-Series: 16' -H 'X-Ubuntu-Architecture: armhf' 'h
 RUN mkdir -p /snap/core
 RUN unsquashfs -d /snap/core/current core.snap
 
+# Grab the core18 snap (which snapcraft uses as a base) from the stable channel
+# and unpack it in the proper place.
+RUN curl -L $(curl -H 'X-Ubuntu-Series: 16' -H 'X-Ubuntu-Architecture: armhf' 'https://api.snapcraft.io/api/v1/snaps/details/core18' | jq '.download_url' -r) --output core18.snap
+RUN mkdir -p /snap/core18
+RUN unsquashfs -d /snap/core18/current core18.snap
+
 # Grab the snapcraft snap from the candidate channel and unpack it in the proper place
 RUN curl -L $(curl -H 'X-Ubuntu-Series: 16' -H 'X-Ubuntu-Architecture: armhf' 'https://api.snapcraft.io/api/v1/snaps/details/snapcraft?channel=stable' | jq '.download_url' -r) --output snapcraft.snap
 RUN mkdir -p /snap/snapcraft
@@ -36,7 +42,7 @@ RUN ["cross-build-end"]
 
 # Multi-stage build, only need the snaps from the builder. Copy them one at a
 # time so they can be cached.
-FROM multiarch/ubuntu-core:armhf-xenial
+FROM arm32v7/ubuntu:bionic
 
 # Prepare the cross build binaries
 COPY bin/* /usr/bin/
@@ -46,19 +52,16 @@ WORKDIR /build
 
 COPY --from=builder /snap/core /snap/core
 COPY --from=builder /snap/snapcraft /snap/snapcraft
+COPY --from=builder /snap/core18 /snap/core18
 COPY --from=builder /snap/bin/snapcraft /snap/bin/snapcraft
 
 RUN ["cross-build-start"]
 
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository ppa:jonathonf/python-3.6
-RUN apt-get update
-RUN apt-get install -y build-essential python3.6 python3.6-dev python3-pip python3.6-venv
-
-# update pip
-RUN python3.6 -m pip install pip --upgrade
-RUN python3.6 -m pip install wheel
+RUN apt-get update \
+  && apt-get install -y python3.6-dev python3-pip  \
+  && cd /usr/local/bin \
+  && ln -s /usr/bin/python3 python \
+  && pip3 install --upgrade pip
 
 # Generate locale
 RUN apt-get update && apt-get dist-upgrade --yes && apt-get install --yes sudo locales && locale-gen en_US.UTF-8
