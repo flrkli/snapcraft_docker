@@ -74,6 +74,6 @@ ENV PATH="/snap/bin:$PATH"
 ENV SNAP="/snap/snapcraft/current"
 ENV SNAP_NAME="snapcraft"
 ENV SNAP_ARCH="armhf"
-ENV PYTHONPATH="/snap/snapcraft/current/lib/python3.6/site-packages:/snap/snapcraft/current/usr/lib/python3.6:/snap/snapcraft/current/usr/lib/arm-linux-gnueabihf:$PYTHONPATH"
+ENV PYTHONPATH="/snap/snapcraft/current/lib/python3.6/site-packages:/snap/snapcraft/current/usr/lib/python3.6:/snap/snapcraft/current/usr/lib/arm-linux-gnueabihf:/snap/snapcraft/current/legacy_snapcraft/lib/python3.6/site-packages:$PYTHONPATH"
 
 RUN ["cross-build-end"]
