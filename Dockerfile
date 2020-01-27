@@ -31,11 +31,12 @@ RUN curl -L $(curl -H 'X-Ubuntu-Series: 16' -H 'X-Ubuntu-Architecture: armhf' 'h
 RUN mkdir -p /snap/snapcraft
 RUN unsquashfs -d /snap/snapcraft/current snapcraft.snap
 
-# Create a snapcraft runner
+# Create a snapcraft runner (TODO: move version detection to the core of
+# snapcraft).
 RUN mkdir -p /snap/bin
 RUN echo "#!/bin/sh" > /snap/bin/snapcraft
-RUN snap_version="$(awk '/^version:/{print $2}' /snap/snapcraft/current/meta/snap.yaml)" && echo "export SNAP_VERSION=3.9.1" >> /snap/bin/snapcraft
-RUN echo 'exec "/usr/bin/python3" "$SNAP/bin/snapcraft" "$@"' >> /snap/bin/snapcraft
+RUN snap_version="$(awk '/^version:/{print $2}' /snap/snapcraft/current/meta/snap.yaml)" && echo "export SNAP_VERSION=\"$snap_version\"" >> /snap/bin/snapcraft
+RUN echo 'exec "$SNAP/usr/bin/python3" "$SNAP/bin/snapcraft" "$@"' >> /snap/bin/snapcraft
 RUN chmod +x /snap/bin/snapcraft
 
 RUN ["cross-build-end"]
